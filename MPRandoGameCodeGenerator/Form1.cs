@@ -39,8 +39,7 @@ namespace MPRandoGameCodeGenerator
         {
             using (var openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "GC ISO File|*.iso";
-                openFileDialog.DefaultExt = "iso";
+                openFileDialog.Filter = "GC ISO File|*.iso|Compressed GC ISO File|*.ciso";
                 openFileDialog.FileName = "";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
@@ -86,6 +85,7 @@ namespace MPRandoGameCodeGenerator
                 TargetGameCode = BaseString + AllowedCharacters[rand.Next(AllowedCharacters.Length)] + "" + AllowedCharacters[rand.Next(AllowedCharacters.Length)];
             ISOManager.PatchGameCode(this.ISOtoPatch_txtBox.Text, TargetGameCode);
             ISOManager.PatchGameTitle(this.ISOtoPatch_txtBox.Text, Path.GetFileNameWithoutExtension(this.ISOtoPatch_txtBox.Text));
+            MessageBox.Show("Game patched with Game Code \""+ TargetGameCode+"\"\r\nand with Game Title \""+ Path.GetFileNameWithoutExtension(this.ISOtoPatch_txtBox.Text)+"\"");
         }
     }
 }
