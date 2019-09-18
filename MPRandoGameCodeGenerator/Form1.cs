@@ -18,13 +18,6 @@ namespace MPRandoGameCodeGenerator
             InitializeComponent();
         }
 
-        private IEnumerable<string> MultiEnumerateFiles(string path, string patterns, SearchOption option)
-        {
-            foreach (var pattern in patterns.Split('|'))
-                foreach (var file in Directory.EnumerateFiles(path, pattern, option))
-                    yield return file;
-        }
-
         private void ISOtoPatch_btn_Click(object sender, EventArgs e)
         {
             using (var openFileDialog = new OpenFileDialog())
@@ -33,7 +26,7 @@ namespace MPRandoGameCodeGenerator
                 openFileDialog.FileName = "";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    this.ISOtoPatch_txtBox.Text = openFileDialog.SafeFileName;
+                    this.ISOtoPatch_txtBox.Text = openFileDialog.FileName;
                 }
             }
         }
