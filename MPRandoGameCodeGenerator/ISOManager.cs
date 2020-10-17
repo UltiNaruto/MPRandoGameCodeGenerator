@@ -2,9 +2,6 @@
 using System.Text;
 using System.Linq;
 using System;
-using System.Collections.Generic;
-using System.IO.MemoryMappedFiles;
-using System.Windows.Forms;
 
 namespace MPRandoGameCodeGenerator
 {
@@ -15,18 +12,21 @@ namespace MPRandoGameCodeGenerator
             if (Path.GetExtension(FileName).ToLower() == ".iso")
             {
                 using (var reader = new BinaryReader(File.OpenRead(FileName)))
-                    return Encoding.ASCII.GetString(reader.ReadBytes(6));
+                    if (reader.BaseStream.Length > 6)
+                        return Encoding.ASCII.GetString(reader.ReadBytes(6));
             }
-            else if (Path.GetExtension(FileName).ToLower() == ".ciso")
+            if (Path.GetExtension(FileName).ToLower() == ".ciso")
             {
                 using (var reader = new BinaryReader(File.OpenRead(FileName)))
                 {
-                    reader.BaseStream.Position = 0x8000;
-                    return Encoding.ASCII.GetString(reader.ReadBytes(6));
+                    if (reader.BaseStream.Length > 0x8006)
+                    {
+                        reader.BaseStream.Position = 0x8000;
+                        return Encoding.ASCII.GetString(reader.ReadBytes(6));
+                    }
                 }
             }
-            else
-                return "ERROR";
+            return "ERROR";
         }
 
         internal static void PatchGameCode(String FileName, String GameCode)
@@ -53,6 +53,14 @@ namespace MPRandoGameCodeGenerator
         internal static void PatchGameTitle(String FileName, String GameTitle)
         {
             long i = 0, j = 0;
+            Func<char, bool> isValidChar = (chr) => chr == 0 || 
+                                  (chr >= 'a' && chr <= 'z') ||
+                                  (chr >= 'A' && chr <= 'Z') ||
+                                  (chr >= '0' && chr <= '9') ||
+                                                  chr == '-' ||
+                                                  chr == '.' ||
+                                                  chr == '_';
+
             if (Path.GetExtension(FileName).ToLower() == ".iso")
             {
                 using (var file = File.Open(FileName, FileMode.Open))
@@ -72,19 +80,11 @@ namespace MPRandoGameCodeGenerator
                     FST_start = BitConverter.ToInt32(reader.ReadBytes(4).Reverse().ToArray(), 0);
                     FST_end = FST_start + BitConverter.ToInt32(reader.ReadBytes(4).Reverse().ToArray(), 0);
                     char chr;
-                    bool isValidChar;
                     for (i = FST_end - 1; i >= FST_start; i--)
                     {
                         file.Position = i;
                         chr = (char)reader.ReadByte();
-                        isValidChar = chr == 0 ||
-                    (chr >= 'a' && chr <= 'z') ||
-                    (chr >= 'A' && chr <= 'Z') ||
-                    (chr >= '0' && chr <= '9') ||
-                                    chr == '-' ||
-                                    chr == '.' ||
-                                    chr == '_';
-                        if (!isValidChar)
+                        if (!isValidChar(chr))
                         {
                             StringTable_start = i;
                             break;
